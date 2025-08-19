@@ -45,7 +45,7 @@ A production-ready MCP server that provides intelligent analysis of SonicWall fi
 ### 1. Get the Server
 
 ```bash
-git clone https://github.com/your-org/sonicwall-mcp-server.git
+git clone https://github.com/gensecaihq/sonicwall-mcp-server.git
 cd sonicwall-mcp-server
 ```
 
