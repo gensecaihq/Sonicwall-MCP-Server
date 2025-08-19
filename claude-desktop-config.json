@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sonicwall": {
+      "transport": "sse",
+      "url": "http://localhost:3000/mcp/v1/sse",
+      "headers": {
+        "Authorization": "Bearer your_optional_token_here"
+      }
+    }
+  }
+}
