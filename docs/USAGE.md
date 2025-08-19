@@ -2,6 +2,19 @@
 
 This comprehensive guide shows you how to use the SonicWall MCP Server for security analysis, threat detection, and network monitoring.
 
+## 🚀 New in Version 1.0.0
+
+### Enhanced SonicOS Support
+- **Accurate API Integration**: Proper endpoint mapping for both SonicOS 7.x and 8.x
+- **Version-Aware Features**: Automatic detection and usage of version-specific capabilities
+- **SonicOS 8.x Enhancements**: Support for cloud management and Advanced Threat Protection
+- **Improved Performance**: Enhanced caching and intelligent request management
+
+### Better Natural Language Processing
+- **Smarter Query Understanding**: Improved pattern recognition for complex security questions
+- **Enhanced Threat Correlation**: Better identification of related security events
+- **Context-Aware Analysis**: More accurate insights based on network topology and patterns
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -30,7 +43,14 @@ Before using the SonicWall MCP Server, ensure:
 3. **Server is running**:
    ```bash
    curl http://localhost:3000/health
-   # Should return: {"status":"healthy",...}
+   # Should return: {"status":"healthy","sonicosVersion":"7.x",...}
+   ```
+
+4. **SonicOS Version Detection**:
+   ```bash
+   # The server automatically detects your SonicOS version
+   # SonicOS 7.x: Uses traditional API endpoints (/api/sonicos/*)
+   # SonicOS 8.x: Uses enhanced endpoints with cloud features (/api/sonicos/v8/*)
    ```
 
 ### First Steps with Claude

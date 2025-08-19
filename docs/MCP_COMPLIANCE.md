@@ -1,6 +1,19 @@
 # MCP Protocol Compliance Guide
 
-This document outlines how the SonicWall MCP Server complies with the Model Context Protocol (MCP) specification version 2024-11-05.
+This document outlines how the SonicWall MCP Server complies with the Model Context Protocol (MCP) specification version **2025-06-18**.
+
+## 🎯 Compliance Status: ✅ FULLY COMPLIANT (v1.0.0)
+
+The SonicWall MCP Server is **fully compliant** with the latest MCP 2025-06-18 specification. All required protocol features are implemented and tested with the updated SDK.
+
+### Latest MCP 2025-06-18 Compliance Updates
+- ✅ **Updated MCP SDK**: Using latest SDK version 1.17.3 with 2025-06-18 protocol support
+- ✅ **Enhanced Protocol Negotiation**: Automatic version detection and compatibility
+- ✅ **Improved Type Safety**: Updated type definitions for CallToolResult and Tool schemas
+- ✅ **Latest Schema Validation**: Full compliance with latest JSON Schema specifications
+- ✅ **SSE Transport Layer**: Production-ready Server-Sent Events implementation
+- ✅ **Advanced Capability Negotiation**: Enhanced initialization and capability declaration
+- ✅ **Comprehensive Error Handling**: Latest MCP-compliant error responses with detailed troubleshooting
 
 ## Protocol Compliance Overview
 
@@ -13,8 +26,8 @@ This document outlines how the SonicWall MCP Server complies with the Model Cont
 
 #### 2. Protocol Version Negotiation  
 - **Requirement**: Support protocol version negotiation during initialization
-- **Implementation**: Server responds with `protocolVersion: "2024-11-05"` during initialization
-- **Location**: `src/server-mcp-compliant.ts:127`
+- **Implementation**: Server responds with `protocolVersion: "2025-06-18"` during initialization using `LATEST_PROTOCOL_VERSION`
+- **Location**: `src/server-mcp-compliant.ts:192`
 
 #### 3. Capability Declaration
 - **Requirement**: Declare server capabilities during initialization

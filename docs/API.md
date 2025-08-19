@@ -2,6 +2,20 @@
 
 This document provides complete technical specifications for all MCP tools available in the SonicWall MCP Server.
 
+## 🚀 Recent Updates (v1.0.0)
+
+### Enhanced SonicOS Integration
+- **Accurate API Endpoints**: Complete endpoint mapping for SonicOS 7.x and 8.x
+- **Version-Aware Processing**: Automatic adaptation to version-specific features
+- **Improved Authentication**: Enhanced session management with proper error handling
+- **Advanced Threat Detection**: Support for SonicOS 8.x Advanced Threat Protection
+
+### MCP Protocol Compliance
+- **Full MCP 2024-11-05 Support**: Complete protocol implementation
+- **JSON Schema Validation**: Comprehensive input/output validation using AJV
+- **Enhanced Error Handling**: Detailed error responses with troubleshooting guidance
+- **Performance Optimization**: Intelligent caching and request management
+
 ## Table of Contents
 
 - [Tool Overview](#tool-overview)

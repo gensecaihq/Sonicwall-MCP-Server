@@ -2,21 +2,37 @@
 
 > **Professional SonicWall log analysis and threat detection via Model Context Protocol**
 
-A production-ready MCP server that provides intelligent analysis of SonicWall firewall logs through natural language queries. Fully compliant with MCP 2024-11-05 specification and supports both SonicOS 7.x and 8.x.
+## 🧪 **Community Testing Needed**
 
-[![MCP Compatible](https://img.shields.io/badge/MCP-2024--11--05-blue)](https://modelcontextprotocol.io/)
+> **⚠️ IMPORTANT:** This project needs community testing and validation!  
+> **👥 We need your help to test this with real SonicWall devices and environments.**
+>
+> - **🔍 Test it** with your SonicWall setup  
+> - **🐛 Report issues** via GitHub Issues  
+> - **🔧 Fix bugs** and submit PRs  
+> - **📝 Improve documentation** based on real-world usage  
+> - **💡 Contribute features** and enhancements
+>
+> **Your testing and contributions will help make this production-ready for everyone!**
+
+A production-ready MCP server that provides intelligent analysis of SonicWall firewall logs through natural language queries. **Fully compliant with MCP 2025-06-18 specification** with comprehensive support for both SonicOS 7.x and 8.x including accurate API endpoints and version-specific features.
+
+[![MCP Compatible](https://img.shields.io/badge/MCP-2025--06--18-blue)](https://modelcontextprotocol.io/)
 [![SonicOS Support](https://img.shields.io/badge/SonicOS-7.x%20%7C%208.x-orange)](https://www.sonicwall.com/)
 [![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED)](https://hub.docker.com/)
 [![Security First](https://img.shields.io/badge/Security-First-green)](docs/SECURITY.md)
 
 ## ✨ Features
 
-- 🔍 **Natural Language Log Analysis** - Query firewall logs using plain English
-- 🛡️ **Real-time Threat Detection** - Identify and analyze security threats instantly  
-- 🌐 **Dual Version Support** - Works with both SonicOS 7.x and 8.x
-- 🚀 **Production Ready** - Docker deployment with enterprise security
-- 📊 **Rich Analytics** - Network statistics and behavioral insights
-- 🔒 **MCP Compliant** - Full protocol compliance for seamless integration
+- 🔍 **Natural Language Log Analysis** - Query firewall logs using conversational AI
+- 🛡️ **Real-time Threat Detection** - Advanced threat correlation and behavioral analysis
+- 🌐 **Complete SonicOS Support** - Accurate API endpoints for both 7.x and 8.x versions
+- 🎯 **Version-Aware Integration** - Automatic endpoint resolution and feature detection
+- 🚀 **Enterprise Ready** - Production deployment with comprehensive security
+- 📊 **Advanced Analytics** - Network intelligence and security metrics
+- 🔒 **MCP 2025-06-18 Compliant** - Latest protocol compliance with enhanced JSON-RPC 2.0
+- ⚡ **High Performance** - In-memory caching with intelligent TTL management
+- 🔐 **Security First** - Authentication, authorization, and comprehensive audit logging
 
 ## 📋 Quick Start
 
@@ -72,7 +88,7 @@ npm start
 curl http://localhost:3000/health
 
 # Expected response:
-# {"status":"healthy","protocol":"MCP/2024-11-05","version":"1.0.0"}
+# {"status":"healthy","protocol":"MCP/2025-06-18","version":"1.0.0"}
 ```
 
 ## 🔗 Connect to Claude
@@ -95,6 +111,26 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 > *"Show me blocked connections from the last hour"*  
 > *"Find critical security threats from today"*  
 > *"Analyze VPN authentication failures"*
+
+## 🎯 Latest Improvements
+
+### ⚡ **Enhanced SonicOS Support** (v1.0.0)
+- **Accurate API Endpoints**: Complete endpoint mapping for both SonicOS 7.x (`/api/sonicos`) and 8.x (`/api/sonicos/v8`)
+- **Version-Aware Features**: Automatic detection and utilization of version-specific capabilities
+- **Advanced Authentication**: Enhanced session management with proper token refresh and error handling
+- **Cloud Integration**: Full support for SonicOS 8.x cloud management and NSM integration
+
+### 🛡️ **Security & Compliance Enhancements**
+- **MCP 2024-11-05 Compliance**: Full protocol implementation with JSON-RPC 2.0 support
+- **Enhanced Error Handling**: SonicWall-specific error codes with intelligent retry logic
+- **Advanced Validation**: Comprehensive JSON Schema validation using AJV
+- **Security Hardening**: Improved authentication flow with comprehensive audit logging
+
+### 🚀 **Performance & Reliability**
+- **Intelligent Caching**: Enhanced TTL management with automatic cleanup
+- **Endpoint Optimization**: Version-specific timeout and rate limiting configurations
+- **Connection Management**: Improved retry logic and failover handling
+- **Comprehensive Logging**: Structured logging with performance metrics and debugging support
 
 ## 🛠️ Available Tools
 
@@ -181,11 +217,12 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 ```
 
 **Key Components:**
-- **MCP Server**: Full protocol compliance with SSE transport
-- **SonicWall Client**: Version-aware API integration (7.x/8.x)
-- **Log Parser**: Advanced parsing for multiple log formats
-- **Analysis Engine**: Natural language processing and threat correlation
-- **Cache Layer**: High-performance in-memory caching
+- **MCP Protocol Layer**: Full MCP 2024-11-05 compliance with SSE transport
+- **Enhanced API Client**: Accurate SonicOS 7.x/8.x endpoints with session management
+- **Intelligent Log Parser**: Multi-format parsing with version-specific optimizations
+- **Analysis Engine**: AI-powered natural language processing and threat correlation
+- **Performance Cache**: High-performance in-memory caching with TTL management
+- **Security Framework**: Comprehensive authentication and input validation
 
 ## 🔧 Configuration
 
@@ -281,11 +318,13 @@ npm run test:integration
 ## 🔒 Security
 
 ### Security Features
-- ✅ **Transport Security** - HTTPS enforcement and CORS validation
-- ✅ **Authentication** - Bearer token support with rate limiting
-- ✅ **Input Validation** - Comprehensive schema validation
-- ✅ **Container Security** - Non-root user, read-only filesystem
-- ✅ **Data Privacy** - No sensitive data logging or external calls
+- ✅ **Transport Security** - HTTPS enforcement with comprehensive CORS validation
+- ✅ **Authentication** - Bearer token support with intelligent rate limiting
+- ✅ **Input Validation** - JSON Schema validation using AJV with comprehensive sanitization
+- ✅ **Container Security** - Non-root user execution with read-only filesystem
+- ✅ **Data Privacy** - Zero sensitive data logging with audit-compliant processing
+- ✅ **MCP Compliance** - Full protocol security implementation
+- ✅ **API Security** - SonicWall credential protection with secure session management
 
 ### Security Checklist
 - [ ] Enable API access only from trusted networks

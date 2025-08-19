@@ -150,7 +150,7 @@ export class EnhancedSonicWallApiClient {
       };
 
       const authEndpoint = this.getEndpoint('auth');
-      console.log(`Authenticating with SonicOS ${this.version}.x at ${authEndpoint}`);
+      // Authentication request logging handled by interceptor
 
       const response = await axios.post(
         `https://${this.host}${authEndpoint}`,
@@ -183,10 +183,10 @@ export class EnhancedSonicWallApiClient {
         const expiresIn = data.expires_in || data.expiry || 3600;
         this.tokenExpiry = new Date(Date.now() + expiresIn * 1000);
 
-        console.log(`Successfully authenticated with SonicOS ${this.version}.x`);
+        // Successfully authenticated - token stored
         
         if (this.sessionId) {
-          console.log(`Session ID: ${this.sessionId}`);
+          // Session ID stored for SonicOS 8.x requests
         }
         
         // Validate we received a token
@@ -245,7 +245,7 @@ export class EnhancedSonicWallApiClient {
     try {
       const logoutEndpoint = this.getEndpoint('logout');
       await this.axios.delete(logoutEndpoint);
-      console.log('Successfully logged out from SonicWall API');
+      // Successfully logged out from SonicWall API
     } catch (error) {
       console.warn('Logout request failed:', error);
     } finally {
@@ -267,7 +267,7 @@ export class EnhancedSonicWallApiClient {
       const queryParams = this.buildLogQueryParams(params);
       const logsEndpoint = this.getEndpoint('logs');
       
-      console.log(`Fetching logs from ${logsEndpoint} with params:`, queryParams);
+      // Fetching logs with specified parameters
       
       const response = await this.axios.get(logsEndpoint, { 
         params: queryParams,
@@ -333,7 +333,7 @@ export class EnhancedSonicWallApiClient {
 
     try {
       const threatsEndpoint = this.getEndpoint('threats');
-      console.log(`Fetching current threats from ${threatsEndpoint} (SonicOS ${this.version}.x)`);
+      // Fetching current threats from endpoint
       
       const response = await this.axios.get(threatsEndpoint, {
         timeout: ENDPOINT_LIMITS.statistics.timeout,
@@ -380,7 +380,7 @@ export class EnhancedSonicWallApiClient {
       const dashboardEndpoint = this.getEndpoint('dashboard');
       const statisticsEndpoint = this.getEndpoint('statistics');
       
-      console.log(`Fetching system stats from ${dashboardEndpoint} (SonicOS ${this.version}.x)`);
+      // Fetching system statistics from dashboard
       
       let response;
       try {
@@ -393,7 +393,7 @@ export class EnhancedSonicWallApiClient {
         });
       } catch (dashError) {
         // Fallback to statistics endpoint
-        console.warn('Dashboard endpoint failed, trying statistics endpoint');
+        // Dashboard endpoint failed, falling back to statistics endpoint
         response = await this.axios.get(statisticsEndpoint, {
           timeout: ENDPOINT_LIMITS.statistics.timeout,
           headers: {
@@ -424,7 +424,7 @@ export class EnhancedSonicWallApiClient {
   async getSystemInfo(): Promise<any> {
     try {
       const systemInfoEndpoint = this.getEndpoint('systemInfo');
-      console.log(`Fetching system info from ${systemInfoEndpoint} (SonicOS ${this.version}.x)`);
+      // Fetching system information
       
       const response = await this.axios.get(systemInfoEndpoint, {
         timeout: ENDPOINT_LIMITS.system.timeout,
@@ -448,7 +448,7 @@ export class EnhancedSonicWallApiClient {
   async getInterfaceStatus(): Promise<any> {
     try {
       const interfacesEndpoint = this.getEndpoint('interfaces');
-      console.log(`Fetching interface status from ${interfacesEndpoint} (SonicOS ${this.version}.x)`);
+      // Fetching interface status information
       
       const response = await this.axios.get(interfacesEndpoint, {
         timeout: ENDPOINT_LIMITS.system.timeout,
@@ -477,7 +477,7 @@ export class EnhancedSonicWallApiClient {
 
     try {
       const cloudEndpoint = this.getVersionSpecificEndpoint('cloudManagement');
-      console.log(`Fetching cloud management status from ${cloudEndpoint} (SonicOS 8.x)`);
+      // Fetching cloud management status (SonicOS 8.x only)
       
       const response = await this.axios.get(cloudEndpoint, {
         timeout: ENDPOINT_LIMITS.system.timeout,
@@ -509,7 +509,7 @@ export class EnhancedSonicWallApiClient {
         ? this.getVersionSpecificEndpoint('advancedThreatProtection')
         : this.getEndpoint('threats'); // Fallback for 7.x
         
-      console.log(`Fetching ATP stats from ${atpEndpoint} (SonicOS ${this.version}.x)`);
+      // Fetching Advanced Threat Protection statistics
       
       const response = await this.axios.get(atpEndpoint, {
         timeout: ENDPOINT_LIMITS.statistics.timeout,

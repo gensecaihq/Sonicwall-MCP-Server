@@ -59,7 +59,9 @@ export const appConfig: Config = {
   cache: {
     ttlSeconds: getNumericEnv('CACHE_TTL_SECONDS', 300),
   },
-  auth: {
-    bearerToken: process.env.MCP_BEARER_TOKEN,
-  },
+  ...(process.env.MCP_BEARER_TOKEN && {
+    auth: {
+      bearerToken: process.env.MCP_BEARER_TOKEN,
+    },
+  }),
 };

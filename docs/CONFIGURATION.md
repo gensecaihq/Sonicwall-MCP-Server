@@ -2,6 +2,14 @@
 
 Complete configuration guide for the SonicWall MCP Server, covering all settings, environment variables, and deployment options.
 
+## 🚀 Version 1.0.0 Configuration Updates
+
+### Enhanced SonicOS Support
+- **Automatic Endpoint Detection**: Version-aware API endpoint selection
+- **SonicOS 8.x Features**: Cloud management and Advanced Threat Protection support
+- **Session Management**: Enhanced authentication with proper session handling
+- **Error Recovery**: Intelligent retry logic with version-specific error handling
+
 ## Table of Contents
 
 - [Environment Variables](#environment-variables)
@@ -23,11 +31,20 @@ SONICWALL_USERNAME=admin
 SONICWALL_PASSWORD=your_secure_password
 ```
 
+### SonicOS Version Configuration
+
+```env
+# SonicOS Version Selection (IMPORTANT)
+SONICWALL_VERSION=7                    # SonicOS version: 7 or 8
+
+# The server automatically uses appropriate API endpoints:
+# SonicOS 7.x: /api/sonicos/* (traditional endpoints)
+# SonicOS 8.x: /api/sonicos/v8/* (enhanced endpoints with cloud features)
+```
+
 ### Optional Configuration
 
 ```env
-# SonicWall Settings
-SONICWALL_VERSION=7                    # SonicOS version: 7 or 8
 
 # Server Settings
 PORT=3000                              # HTTP server port

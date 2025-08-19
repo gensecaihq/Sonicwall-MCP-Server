@@ -2,6 +2,16 @@
 
 Comprehensive troubleshooting guide for the SonicWall MCP Server, covering common issues, diagnostic procedures, and solutions.
 
+## 🚀 Version 1.0.0 Troubleshooting Updates
+
+### SonicOS Version-Specific Issues
+The server now includes enhanced diagnostics for both SonicOS 7.x and 8.x endpoints:
+
+- **Endpoint Validation**: Automatic detection of correct API endpoints
+- **Version Mismatch Detection**: Clear error messages for configuration issues
+- **Enhanced Error Reporting**: Detailed SonicWall API error codes and solutions
+- **Session Management**: Improved authentication troubleshooting for SonicOS 8.x
+
 ## Table of Contents
 
 - [Quick Diagnosis](#quick-diagnosis)
@@ -44,7 +54,13 @@ docker-compose ps
   "protocol": "MCP/2024-11-05",
   "sonicwall": {
     "connected": true,
-    "version": "SonicOS 7.0.1"
+    "version": "SonicOS 7.x",
+    "endpoints": "accurate",
+    "apiCompliance": "full"
+  },
+  "cache": {
+    "hitRatio": 85.3,
+    "size": 234
   }
 }
 ```
@@ -56,6 +72,62 @@ Content-Type: text/event-stream
 Cache-Control: no-cache
 Connection: keep-alive
 ```
+
+## SonicOS Version Issues
+
+### ❌ Wrong API Endpoints
+
+**Problem**: Server configured for wrong SonicOS version
+
+**Symptoms**:
+```
+ERROR: Endpoint '/api/sonicos/v8/auth' not available in SonicOS 7.x
+ERROR: Authentication failed: HTTP 404 - Endpoint not found
+```
+
+**Solution**:
+```env
+# Check your SonicOS version in: SYSTEM > Settings > Version
+# Update configuration accordingly:
+SONICWALL_VERSION=7  # For SonicOS 7.x
+SONICWALL_VERSION=8  # For SonicOS 8.x
+
+# Restart server after changing version
+docker-compose restart
+```
+
+### ❌ SonicOS 8.x Session Issues
+
+**Problem**: Session management problems with SonicOS 8.x
+
+**Symptoms**:
+```
+WARN: Session ID missing for SonicOS 8.x request
+ERROR: X-Session-ID header required for SonicOS 8.x
+```
+
+**Solution**:
+```bash
+# Verify SonicOS 8.x is properly configured
+# The server automatically handles session management
+# Check logs for detailed session information:
+docker-compose logs sonicwall-mcp | grep "Session ID"
+```
+
+### ❌ Feature Not Available
+
+**Problem**: Using SonicOS 8.x features on 7.x system
+
+**Symptoms**:
+```
+ERROR: Cloud management status is only available in SonicOS 8.x
+ERROR: Advanced threat protection stats may not be fully available in SonicOS 7.x
+```
+
+**Solution**:
+- Verify your SonicOS version supports the requested feature
+- Some features are version-specific and will gracefully degrade
+- Check feature availability in server logs
 
 ## Connection Issues
 

@@ -10,10 +10,13 @@ import {
   PingRequestSchema,
   ListResourcesRequestSchema,
   ListPromptsRequestSchema,
-  ToolCallResult,
-  Tool,
+  CallToolResultSchema,
+  ToolSchema,
   ErrorCode,
-  McpError
+  McpError,
+  LATEST_PROTOCOL_VERSION,
+  type CallToolResult,
+  type Tool
 } from '@modelcontextprotocol/sdk/types.js';
 import winston from 'winston';
 import Ajv from 'ajv';
@@ -122,7 +125,7 @@ class SonicWallMCPServer {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
-        protocol: 'MCP/2024-11-05',
+        protocol: `MCP/${LATEST_PROTOCOL_VERSION}`,
         capabilities: Object.keys(this.serverCapabilities),
       });
     });
@@ -188,7 +191,7 @@ class SonicWallMCPServer {
       });
       
       return {
-        protocolVersion: '2024-11-05',
+        protocolVersion: LATEST_PROTOCOL_VERSION,
         capabilities: this.serverCapabilities,
         serverInfo: {
           name: 'sonicwall-analyzer',
@@ -455,22 +458,22 @@ class SonicWallMCPServer {
         let result: any;
         const startTime = Date.now();
 
-        // Execute the appropriate tool
+        // Execute the appropriate tool with proper type handling
         switch (name) {
           case 'analyze_logs':
-            result = await analyzeLogs(this.sonicwallClient, args);
+            result = await analyzeLogs(this.sonicwallClient, args as any);
             break;
           case 'get_threats':
-            result = await getThreats(this.sonicwallClient, args);
+            result = await getThreats(this.sonicwallClient, args as any);
             break;
           case 'search_connections':
-            result = await searchConnections(this.sonicwallClient, args);
+            result = await searchConnections(this.sonicwallClient, args as any);
             break;
           case 'get_stats':
-            result = await getStats(this.sonicwallClient, args);
+            result = await getStats(this.sonicwallClient, args as any);
             break;
           case 'export_logs':
-            result = await exportLogs(this.sonicwallClient, args);
+            result = await exportLogs(this.sonicwallClient, args as any);
             break;
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
@@ -483,7 +486,7 @@ class SonicWallMCPServer {
         });
 
         // Format result according to MCP spec
-        const toolResult: ToolCallResult = {
+        const toolResult: CallToolResult = {
           content: [
             {
               type: 'text',
@@ -506,7 +509,7 @@ class SonicWallMCPServer {
           throw error;
         }
 
-        const errorResult: ToolCallResult = {
+        const errorResult: CallToolResult = {
           content: [
             {
               type: 'text',
