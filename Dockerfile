@@ -1,5 +1,6 @@
 # Multi-stage build for optimal image size
-FROM node:20-alpine AS builder
+# Use latest Node.js LTS with Alpine for minimal attack surface
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -8,7 +9,8 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies (including dev dependencies)
-RUN npm ci
+# Use npm ci for faster, reliable, reproducible builds
+RUN npm ci --ignore-scripts && npm cache clean --force
 
 # Copy source code
 COPY src/ ./src/
@@ -17,34 +19,38 @@ COPY src/ ./src/
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init for proper signal handling and security updates
+RUN apk add --no-cache dumb-init && \
+    apk upgrade --no-cache
 
-# Create non-root user
-RUN addgroup -g 1001 -S sonicwall && \
-    adduser -S sonicwall -u 1001 -G sonicwall
+# Create non-root user with specific UID/GID for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
 
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install only production dependencies with security optimizations
+RUN npm ci --omit=dev --ignore-scripts && \
+    npm cache clean --force && \
+    npm audit fix --audit-level=moderate || true
 
 # Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 
 # Copy environment example (optional)
-COPY .env.example ./
+COPY --chown=nodejs:nodejs .env.example ./
 
-# Change ownership to non-root user
-RUN chown -R sonicwall:sonicwall /app
+# Create necessary directories with proper permissions
+RUN mkdir -p logs tmp && \
+    chown -R nodejs:nodejs /app
 
 # Switch to non-root user
-USER sonicwall
+USER nodejs
 
 # Expose port
 EXPOSE 3000

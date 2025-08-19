@@ -84,10 +84,10 @@ This project adheres to a code of conduct that we expect all contributors to fol
 
 ```bash
 # Development with hot reload
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose -f docker compose.yml -f docker compose.dev.yml up
 
 # Run tests in container
-docker-compose exec sonicwall-mcp npm test
+docker compose exec sonicwall-mcp npm test
 ```
 
 ## Contributing Process

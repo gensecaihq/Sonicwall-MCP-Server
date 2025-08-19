@@ -37,10 +37,10 @@ curl http://localhost:3000/health
 curl -H "Accept: text/event-stream" http://localhost:3000/mcp/v1/sse
 
 # 3. View server logs
-docker-compose logs sonicwall-mcp
+docker compose logs sonicwall-mcp
 
 # 4. Check container status
-docker-compose ps
+docker compose ps
 ```
 
 ### Expected Responses
@@ -93,7 +93,7 @@ SONICWALL_VERSION=7  # For SonicOS 7.x
 SONICWALL_VERSION=8  # For SonicOS 8.x
 
 # Restart server after changing version
-docker-compose restart
+docker compose restart
 ```
 
 ### ❌ SonicOS 8.x Session Issues
@@ -111,7 +111,7 @@ ERROR: X-Session-ID header required for SonicOS 8.x
 # Verify SonicOS 8.x is properly configured
 # The server automatically handles session management
 # Check logs for detailed session information:
-docker-compose logs sonicwall-mcp | grep "Session ID"
+docker compose logs sonicwall-mcp | grep "Session ID"
 ```
 
 ### ❌ Feature Not Available
@@ -149,7 +149,7 @@ telnet $SONICWALL_HOST 443
 nmap -p 443 $SONICWALL_HOST
 
 # Test from container
-docker-compose exec sonicwall-mcp ping $SONICWALL_HOST
+docker compose exec sonicwall-mcp ping $SONICWALL_HOST
 ```
 
 **Solutions:**
@@ -170,7 +170,7 @@ docker-compose exec sonicwall-mcp ping $SONICWALL_HOST
 
 3. **Container Networking**
    ```yaml
-   # docker-compose.yml
+   # docker compose.yml
    version: '3.8'
    services:
      sonicwall-mcp:
@@ -276,7 +276,7 @@ curl -k -X POST https://$SONICWALL_HOST/api/sonicos/auth \
 2. **Check Token Expiration**:
    ```bash
    # View server logs for token refresh events
-   docker-compose logs sonicwall-mcp | grep -i "token\|auth"
+   docker compose logs sonicwall-mcp | grep -i "token\|auth"
    ```
 
 ## Performance Issues
@@ -359,7 +359,7 @@ curl http://localhost:3000/health | jq '.memory'
 
 2. **Memory Limits**
    ```yaml
-   # docker-compose.yml
+   # docker compose.yml
    services:
      sonicwall-mcp:
        deploy:
@@ -436,7 +436,7 @@ curl -I -H "Origin: https://claude.ai" \
 curl http://localhost:3000/health
 
 # View validation errors in logs
-docker-compose logs sonicwall-mcp | grep -i "validation\|schema"
+docker compose logs sonicwall-mcp | grep -i "validation\|schema"
 ```
 
 **Solutions:**
@@ -479,13 +479,13 @@ docker-compose logs sonicwall-mcp | grep -i "validation\|schema"
 **Diagnosis:**
 ```bash
 # Check container logs
-docker-compose logs sonicwall-mcp
+docker compose logs sonicwall-mcp
 
 # Check container status
-docker-compose ps
+docker compose ps
 
 # Inspect container
-docker-compose exec sonicwall-mcp ls -la /app
+docker compose exec sonicwall-mcp ls -la /app
 ```
 
 **Solutions:**
@@ -493,7 +493,7 @@ docker-compose exec sonicwall-mcp ls -la /app
 1. **Build Issues**
    ```bash
    # Rebuild container
-   docker-compose build --no-cache
+   docker compose build --no-cache
    
    # Clear Docker cache
    docker system prune -a
@@ -514,7 +514,7 @@ docker-compose exec sonicwall-mcp ls -la /app
    cat .env
    
    # Verify variables are loaded
-   docker-compose config
+   docker compose config
    ```
 
 ### ❌ "Cannot Connect to Docker Daemon"
@@ -539,14 +539,14 @@ systemctl status docker
 **View Real-time Logs:**
 ```bash
 # Follow all logs
-docker-compose logs -f
+docker compose logs -f
 
 # Filter by service
-docker-compose logs -f sonicwall-mcp
+docker compose logs -f sonicwall-mcp
 
 # Filter by level
-docker-compose logs sonicwall-mcp | grep ERROR
-docker-compose logs sonicwall-mcp | grep WARN
+docker compose logs sonicwall-mcp | grep ERROR
+docker compose logs sonicwall-mcp | grep WARN
 ```
 
 ### Common Log Patterns
@@ -620,7 +620,7 @@ nslookup $SONICWALL_HOST
 dig $SONICWALL_HOST
 
 # Test from container
-docker-compose exec sonicwall-mcp nslookup $SONICWALL_HOST
+docker compose exec sonicwall-mcp nslookup $SONICWALL_HOST
 ```
 
 ### Performance Profiling
@@ -668,7 +668,7 @@ echo "1. Server Status:"
 curl -s http://localhost:3000/health | jq '.' || echo "Server not responding"
 
 echo -e "\n2. Container Status:"
-docker-compose ps
+docker compose ps
 
 echo -e "\n3. SonicWall Connectivity:"
 curl -k -s --connect-timeout 5 https://$SONICWALL_HOST/api/sonicos/auth || echo "Cannot reach SonicWall"
@@ -677,13 +677,13 @@ echo -e "\n4. MCP Endpoint:"
 curl -s -H "Accept: text/event-stream" http://localhost:3000/mcp/v1/sse | head -1
 
 echo -e "\n5. Recent Errors:"
-docker-compose logs sonicwall-mcp | grep ERROR | tail -5
+docker compose logs sonicwall-mcp | grep ERROR | tail -5
 
 echo -e "\n6. Memory Usage:"
 docker stats sonicwall-mcp --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
 
 echo -e "\n7. Environment Check:"
-docker-compose exec sonicwall-mcp env | grep -E "SONICWALL_HOST|SONICWALL_VERSION|NODE_ENV"
+docker compose exec sonicwall-mcp env | grep -E "SONICWALL_HOST|SONICWALL_VERSION|NODE_ENV"
 ```
 
 ### Performance Test Script
@@ -724,19 +724,19 @@ Before reporting issues, collect:
 
 1. **Server logs**:
    ```bash
-   docker-compose logs sonicwall-mcp > server-logs.txt
+   docker compose logs sonicwall-mcp > server-logs.txt
    ```
 
 2. **Configuration**:
    ```bash
-   docker-compose config > config.yml
+   docker compose config > config.yml
    env | grep SONICWALL > env-vars.txt
    ```
 
 3. **System information**:
    ```bash
    docker version > docker-info.txt
-   docker-compose version >> docker-info.txt
+   docker compose version >> docker-info.txt
    uname -a > system-info.txt
    ```
 
@@ -755,4 +755,4 @@ Before reporting issues, collect:
 
 ---
 
-**💡 Pro Tip**: Most issues can be resolved by checking the server logs first. Use `docker-compose logs -f sonicwall-mcp` to monitor real-time logs while testing functionality.
+**💡 Pro Tip**: Most issues can be resolved by checking the server logs first. Use `docker compose logs -f sonicwall-mcp` to monitor real-time logs while testing functionality.

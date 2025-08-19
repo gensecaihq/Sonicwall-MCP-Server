@@ -43,10 +43,10 @@ export async function searchConnections(
   const queryParams: LogQueryParams = {
     startTime: new Date(Date.now() - hoursBack * 3600000),
     endTime: new Date(),
-    sourceIp,
-    destIp,
-    port,
-    action: action === 'all' ? undefined : action,
+    ...(sourceIp && { sourceIp }),
+    ...(destIp && { destIp }),
+    ...(port && { port }),
+    action: action === 'all' ? 'all' : action,
     limit: Math.min(limit, 1000), // Cap at 1000 for performance
   };
 

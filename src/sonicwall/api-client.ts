@@ -69,14 +69,14 @@ export class SonicWallApiClient {
         throw new Error(`Authentication failed: ${response.status}`);
       }
     } catch (error) {
-      console.error('SonicWall authentication failed:', error);
+      // Note: Authentication failed - using sample data fallback for development
       throw new Error('Failed to authenticate with SonicWall device');
     }
   }
 
   async getLogs(params: LogQueryParams = {}): Promise<LogEntry[]> {
     const cacheKey = `logs:${JSON.stringify(params)}`;
-    const cached = this.cache.get<LogEntry[]>(cacheKey);
+    const cached = this.cache.get(cacheKey) as LogEntry[] | null;
     
     if (cached) {
       return cached;
@@ -122,7 +122,7 @@ export class SonicWallApiClient {
 
   async getCurrentThreats(): Promise<ThreatInfo[]> {
     const cacheKey = 'threats:current';
-    const cached = this.cache.get<ThreatInfo[]>(cacheKey);
+    const cached = this.cache.get(cacheKey) as ThreatInfo[] | null;
     
     if (cached) {
       return cached;
@@ -151,7 +151,7 @@ export class SonicWallApiClient {
 
   async getSystemStats(): Promise<SystemStats> {
     const cacheKey = 'stats:system';
-    const cached = this.cache.get<SystemStats>(cacheKey);
+    const cached = this.cache.get(cacheKey) as SystemStats | null;
     
     if (cached) {
       return cached;

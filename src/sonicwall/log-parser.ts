@@ -36,12 +36,12 @@ export class SonicWallLogParser {
         timestamp: this.parseTimestamp(timestamp, timeStr),
         severity: this.mapPriorityToSeverity(parseInt(priority)),
         category: this.mapCategoryCode(parseInt(category)),
-        action: this.extractAction(message),
+        action: this.extractAction(message || ''),
         sourceIp: sourceIp || 'unknown',
         sourcePort: sourcePort ? parseInt(sourcePort) : undefined,
         destIp: destIp || 'unknown',
         destPort: destPort ? parseInt(destPort) : undefined,
-        protocol: this.normalizeProtocol(protocol),
+        protocol: this.normalizeProtocol(protocol || ''),
         rule: rule || undefined,
         message: message || 'Unknown message',
         raw: rawLine,
@@ -61,16 +61,17 @@ export class SonicWallLogParser {
 
     const [, timestamp, action, sourceIp, destIp, protocol] = match;
 
+    const actionLower = action ? action.toLowerCase() as 'allow' | 'deny' | 'drop' : 'deny';
     return {
       id: this.generateId(),
-      timestamp: new Date(timestamp),
+      timestamp: new Date(timestamp || Date.now()),
       severity: action === 'DENY' || action === 'DROP' ? 'medium' : 'info',
       category: 'firewall',
-      action: action.toLowerCase() as 'allow' | 'deny' | 'drop',
-      sourceIp,
-      destIp,
-      protocol: this.normalizeProtocol(protocol),
-      message: `Traffic ${action.toLowerCase()}ed from ${sourceIp} to ${destIp}`,
+      action: actionLower,
+      sourceIp: sourceIp || 'unknown',
+      destIp: destIp || 'unknown',
+      protocol: this.normalizeProtocol(protocol || ''),
+      message: `Traffic ${actionLower}ed from ${sourceIp || 'unknown'} to ${destIp || 'unknown'}`,
       raw: rawLine,
     };
   }

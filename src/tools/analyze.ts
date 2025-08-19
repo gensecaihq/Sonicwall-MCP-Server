@@ -29,7 +29,7 @@ export async function analyzeLogs(
   const queryParams: LogQueryParams = {
     startTime: new Date(Date.now() - hoursBack * 3600000),
     endTime: new Date(),
-    logType: logType === 'all' ? undefined : logType,
+    logType: logType === 'all' ? 'all' : logType,
     limit: 1000, // Limit for analysis
   };
 

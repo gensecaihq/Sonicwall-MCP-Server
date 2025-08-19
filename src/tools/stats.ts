@@ -84,14 +84,14 @@ async function getTopBlockedIps(logs: any[], limit: number) {
   return Object.entries(ipCounts)
     .map(([ip, count]) => ({
       ip,
-      count,
-      percentage: Math.round((count / blockedLogs.length) * 100),
+      count: count as number,
+      percentage: Math.round(((count as number) / blockedLogs.length) * 100),
       lastSeen: Math.max(...blockedLogs
         .filter(log => log.sourceIp === ip)
         .map(log => log.timestamp.getTime())
       ),
     }))
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => (b.count as number) - (a.count as number))
     .slice(0, limit);
 }
 
@@ -106,15 +106,15 @@ async function getTopAllowedIps(logs: any[], limit: number) {
   return Object.entries(ipCounts)
     .map(([ip, count]) => ({
       ip,
-      count,
-      dataTransferred: Math.round(count * Math.random() * 1024 * 1024), // Simulated data
-      percentage: Math.round((count / allowedLogs.length) * 100),
+      count: count as number,
+      dataTransferred: Math.round((count as number) * Math.random() * 1024 * 1024), // Simulated data
+      percentage: Math.round(((count as number) / allowedLogs.length) * 100),
       lastSeen: Math.max(...allowedLogs
         .filter(log => log.sourceIp === ip)
         .map(log => log.timestamp.getTime())
       ),
     }))
-    .sort((a, b) => b.count - a.count)
+    .sort((a, b) => (b.count as number) - (a.count as number))
     .slice(0, limit);
 }
 

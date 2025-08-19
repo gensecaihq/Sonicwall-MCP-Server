@@ -51,9 +51,9 @@ const logger = winston.createLogger({
 
 class SonicWallMCPServer {
   private app: express.Application;
-  private mcpServer: Server;
-  private sonicwallClient: SonicWallApiClient;
-  private transport: SSEServerTransport;
+  private mcpServer!: Server;
+  private sonicwallClient!: SonicWallApiClient;
+  private transport!: SSEServerTransport;
   private ajv: Ajv;
   private serverCapabilities = {
     tools: {},
@@ -105,10 +105,10 @@ class SonicWallMCPServer {
         ];
         
         if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
+          return callback(null, true);
         } else {
           logger.warn(`Blocked CORS request from origin: ${origin}`);
-          callback(new Error('Not allowed by CORS'), false);
+          return callback(new Error('Not allowed by CORS'), false);
         }
       },
       credentials: true,
@@ -139,7 +139,7 @@ class SonicWallMCPServer {
         if (!authHeader || authHeader !== expectedToken) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        next();
+        return next();
       });
     }
   }
@@ -171,7 +171,7 @@ class SonicWallMCPServer {
     );
 
     // Set up SSE transport with proper configuration
-    this.transport = new SSEServerTransport('/mcp/v1/sse', this.app);
+    this.transport = new SSEServerTransport('/mcp/v1/sse', this.app as any);
 
     // Register all MCP handlers
     this.registerMCPHandlers();

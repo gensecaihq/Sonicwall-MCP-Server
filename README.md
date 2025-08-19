@@ -71,7 +71,9 @@ SONICWALL_VERSION=7  # or 8 for SonicOS 8.x
 
 **Using Docker (Recommended):**
 ```bash
-docker-compose up -d
+docker compose up -d
+# or using npm script
+npm run docker:up
 ```
 
 **Using Node.js:**
@@ -257,32 +259,65 @@ RATE_LIMIT_MAX=100
 
 ## 🐳 Docker Deployment
 
-### Production Deployment
-```yaml
-version: '3.8'
-services:
-  sonicwall-mcp:
-    image: sonicwall-mcp-server:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - SONICWALL_HOST=192.168.1.1
-      - SONICWALL_USERNAME=admin
-      - SONICWALL_PASSWORD=your_password
-      - NODE_ENV=production
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+### Prerequisites
+- Docker Engine 24.0+ (latest stable)
+- Docker Compose V2 (integrated plugin, comes with Docker Desktop)
+- **Note**: Legacy `docker-compose` command is deprecated, use `docker compose`
+
+### Quick Start Commands
+```bash
+# Production deployment (detached mode)
+docker compose up -d
+
+# Development mode (with hot reload)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# View logs
+docker compose logs -f sonicwall-mcp
+
+# Stop all services
+docker compose down
+
+# Rebuild and restart
+docker compose up --build -d
 ```
 
-### Development with Hot Reload
+### NPM Script Shortcuts
 ```bash
-# Development mode
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Production deployment
+npm run docker:up
+
+# Development with hot reload
+npm run docker:dev  
+
+# View logs
+npm run docker:logs
+
+# Stop services
+npm run docker:down
+
+# Build image only
+npm run docker:build
 ```
+
+### Environment Configuration
+```bash
+# Use environment file
+cp .env.example .env
+# Edit .env with your SonicWall details
+docker compose up -d
+
+# Or pass environment variables directly
+SONICWALL_HOST=192.168.1.1 \
+SONICWALL_USERNAME=admin \
+SONICWALL_PASSWORD=your_password \
+docker compose up -d
+```
+
+### Docker Compose Files
+- `docker-compose.yml` - Production configuration
+- `docker-compose.dev.yml` - Development overrides
+- `docker-compose.override.yml` - Local customizations (optional)
 
 ## 🧪 Testing & Validation
 
@@ -381,7 +416,7 @@ curl http://localhost:3000/health | jq
 ### Performance Metrics
 ```bash
 # View performance logs
-docker-compose logs sonicwall-mcp | grep "executed successfully"
+docker compose logs sonicwall-mcp | grep "executed successfully"
 
 # Example output:
 # {"timestamp":"2024-01-01T12:00:00.000Z","level":"info","message":"Tool analyze_logs executed successfully","executionTime":245,"resultSize":15420}
@@ -390,10 +425,10 @@ docker-compose logs sonicwall-mcp | grep "executed successfully"
 ### Log Analysis
 ```bash
 # Error monitoring
-docker-compose logs sonicwall-mcp | grep ERROR
+docker compose logs sonicwall-mcp | grep ERROR
 
 # Performance tracking
-docker-compose logs sonicwall-mcp | grep "execution time"
+docker compose logs sonicwall-mcp | grep "execution time"
 ```
 
 ## 🤝 Contributing

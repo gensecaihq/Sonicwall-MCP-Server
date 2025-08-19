@@ -5,19 +5,19 @@ export interface LogEntry {
   category: 'firewall' | 'vpn' | 'ips' | 'antivirus' | 'system';
   action: 'allow' | 'deny' | 'drop' | 'reset';
   sourceIp: string;
-  sourcePort?: number;
+  sourcePort?: number | undefined;
   destIp: string;
-  destPort?: number;
+  destPort?: number | undefined;
   protocol: 'TCP' | 'UDP' | 'ICMP' | 'OTHER';
-  rule?: string;
+  rule?: string | undefined;
   message: string;
   raw: string;
   // SonicOS 8.x specific fields
-  cloudId?: string;
-  tenantId?: string;
-  fileHash?: string;
-  threatName?: string;
-  analysisTime?: number;
+  cloudId?: string | undefined;
+  tenantId?: string | undefined;
+  fileHash?: string | undefined;
+  threatName?: string | undefined;
+  analysisTime?: number | undefined;
 }
 
 export interface ThreatInfo {

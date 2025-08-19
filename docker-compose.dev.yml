@@ -1,0 +1,26 @@
+# Development override for Docker Compose
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  sonicwall-mcp:
+    build:
+      target: builder
+    command: npm run dev
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src:ro
+      - ./package*.json:/app/:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./.env:/app/.env:ro
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    # Remove resource limits for development
+    mem_limit: 1g
+    mem_reservation: 512m
+    # Remove read-only filesystem for development
+    read_only: false
+    # Add development port mapping for debugging
+    ports:
+      - "${PORT:-3000}:3000"
+      - "9229:9229"  # Node.js debug port

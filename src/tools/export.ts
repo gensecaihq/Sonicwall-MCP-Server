@@ -40,10 +40,10 @@ export async function exportLogs(
   const queryParams: LogQueryParams = {
     startTime: filters.startTime ? new Date(filters.startTime) : new Date(Date.now() - 86400000), // Default: last 24h
     endTime: filters.endTime ? new Date(filters.endTime) : new Date(),
-    logType: filters.logType === 'all' ? undefined : filters.logType,
-    sourceIp: filters.sourceIp,
-    destIp: filters.destIp,
-    action: filters.action === 'all' ? undefined : filters.action,
+    logType: filters.logType === 'all' ? 'all' : filters.logType,
+    ...(filters.sourceIp && { sourceIp: filters.sourceIp }),
+    ...(filters.destIp && { destIp: filters.destIp }),
+    action: filters.action === 'all' ? 'all' : filters.action,
     severity: filters.severity,
     limit: Math.min(limit, 50000), // Cap at 50k records for performance
   };
@@ -242,10 +242,10 @@ export function createExportSummary(logs: LogEntry[]): any {
 
   // Convert timestamps to readable format
   if (summary.timeRange.earliest) {
-    summary.timeRange.earliest = new Date(summary.timeRange.earliest).toISOString();
+    (summary.timeRange as any).earliest = new Date(summary.timeRange.earliest as number).toISOString();
   }
   if (summary.timeRange.latest) {
-    summary.timeRange.latest = new Date(summary.timeRange.latest).toISOString();
+    (summary.timeRange as any).latest = new Date(summary.timeRange.latest as number).toISOString();
   }
 
   return summary;
