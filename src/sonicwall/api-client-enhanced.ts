@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import https from 'https';
+import * as https from 'https';
 import { LogEntry, LogQueryParams, ThreatInfo, SystemStats, AuthResponse, ApiResponse } from './types';
 import { SonicWallLogParser } from './log-parser';
 import { MemoryCache } from '../utils/cache';
@@ -94,9 +94,9 @@ export class EnhancedSonicWallApiClient {
       async (error) => {
         // Handle 401 unauthorized - token expired
         if (error.response?.status === 401) {
-          this.authToken = undefined;
-          this.tokenExpiry = undefined;
-          this.sessionId = undefined;
+          delete this.authToken;
+          delete this.tokenExpiry;
+          delete this.sessionId;
           
           // Retry once with new authentication
           if (!error.config._retry) {
@@ -121,7 +121,7 @@ export class EnhancedSonicWallApiClient {
 
   private getEndpoint(key: keyof SonicWallEndpoints): string {
     const endpoint = this.endpoints[key];
-    if (!endpoint) {
+    if (!endpoint || typeof endpoint === 'object') {
       throw new Error(`Endpoint '${key}' not available in SonicOS ${this.version}.x`);
     }
     return endpoint;
@@ -249,15 +249,15 @@ export class EnhancedSonicWallApiClient {
     } catch (error) {
       console.warn('Logout request failed:', error);
     } finally {
-      this.authToken = undefined;
-      this.tokenExpiry = undefined;
-      this.sessionId = undefined;
+      delete this.authToken;
+      delete this.tokenExpiry;
+      delete this.sessionId;
     }
   }
 
   async getLogs(params: LogQueryParams = {}): Promise<LogEntry[]> {
     const cacheKey = `logs:${JSON.stringify(params)}`;
-    const cached = this.cache.get<LogEntry[]>(cacheKey);
+    const cached = this.cache.get(cacheKey) as LogEntry[] | undefined;
     
     if (cached) {
       return cached;
@@ -325,20 +325,31 @@ export class EnhancedSonicWallApiClient {
 
   async getCurrentThreats(): Promise<ThreatInfo[]> {
     const cacheKey = 'threats:current';
-    const cached = this.cache.get<ThreatInfo[]>(cacheKey);
+    const cached = this.cache.get(cacheKey) as ThreatInfo[] | undefined;
     
     if (cached) {
       return cached;
     }
 
     try {
-      const endpoint = this.getEndpoint('threats');
-      const response = await this.axios.get(endpoint);
+      const threatsEndpoint = this.getEndpoint('threats');
+      console.log(`Fetching current threats from ${threatsEndpoint} (SonicOS ${this.version}.x)`);
+      
+      const response = await this.axios.get(threatsEndpoint, {
+        timeout: ENDPOINT_LIMITS.statistics.timeout,
+        headers: {
+          'Accept': 'application/json',
+          'X-Request-Type': 'threat-query'
+        }
+      });
       
       let threats: ThreatInfo[] = [];
       
       if (response.status === 200 && response.data?.threats) {
         threats = response.data.threats.map((threat: any) => this.parseStructuredThreat(threat));
+      } else if (response.data?.security_services) {
+        // Parse from security services format (SonicOS common format)
+        threats = this.parseThreatsFromSecurityServices(response.data.security_services);
       } else if (response.data?.statistics) {
         // Parse from statistics format
         threats = this.parseThreatsFromStats(response.data.statistics);
@@ -351,57 +362,109 @@ export class EnhancedSonicWallApiClient {
       this.cache.set(cacheKey, threats, 60); // Cache for 1 minute
       return threats;
     } catch (error: any) {
-      console.error('Failed to fetch threats from SonicWall:', error);
+      console.error(`Failed to fetch threats from SonicWall ${this.version}.x:`, error);
       return this.generateSampleThreats();
     }
   }
 
   async getSystemStats(): Promise<SystemStats> {
     const cacheKey = 'stats:system';
-    const cached = this.cache.get<SystemStats>(cacheKey);
+    const cached = this.cache.get(cacheKey) as SystemStats | undefined;
     
     if (cached) {
       return cached;
     }
 
     try {
-      const endpoint = this.getEndpoint('dashboard');
-      const response = await this.axios.get(endpoint);
+      // Try dashboard endpoint first, fall back to statistics endpoint
+      const dashboardEndpoint = this.getEndpoint('dashboard');
+      const statisticsEndpoint = this.getEndpoint('statistics');
+      
+      console.log(`Fetching system stats from ${dashboardEndpoint} (SonicOS ${this.version}.x)`);
+      
+      let response;
+      try {
+        response = await this.axios.get(dashboardEndpoint, {
+          timeout: ENDPOINT_LIMITS.statistics.timeout,
+          headers: {
+            'Accept': 'application/json',
+            'X-Request-Type': 'dashboard-query'
+          }
+        });
+      } catch (dashError) {
+        // Fallback to statistics endpoint
+        console.warn('Dashboard endpoint failed, trying statistics endpoint');
+        response = await this.axios.get(statisticsEndpoint, {
+          timeout: ENDPOINT_LIMITS.statistics.timeout,
+          headers: {
+            'Accept': 'application/json',
+            'X-Request-Type': 'statistics-query'
+          }
+        });
+      }
       
       let stats: SystemStats;
       
       if (response.status === 200 && response.data) {
         stats = this.parseSystemStats(response.data);
       } else {
+        // Generate stats from logs as fallback
+        console.warn('No statistics data from API, generating from logs');
         stats = await this.generateStatsFromLogs();
       }
       
       this.cache.set(cacheKey, stats, 300); // Cache for 5 minutes
       return stats;
     } catch (error: any) {
-      console.error('Failed to fetch system stats from SonicWall:', error);
+      console.error(`Failed to fetch system stats from SonicWall ${this.version}.x:`, error);
       return this.generateStatsFromLogs();
     }
   }
 
   async getSystemInfo(): Promise<any> {
     try {
-      const endpoint = this.getEndpoint('systemInfo');
-      const response = await this.axios.get(endpoint);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch system info:', error);
+      const systemInfoEndpoint = this.getEndpoint('systemInfo');
+      console.log(`Fetching system info from ${systemInfoEndpoint} (SonicOS ${this.version}.x)`);
+      
+      const response = await this.axios.get(systemInfoEndpoint, {
+        timeout: ENDPOINT_LIMITS.system.timeout,
+        headers: {
+          'Accept': 'application/json',
+          'X-Request-Type': 'system-info'
+        }
+      });
+      
+      if (response.status === 200 && response.data) {
+        return response.data;
+      }
+      
+      return null;
+    } catch (error: any) {
+      console.error(`Failed to fetch system info from SonicOS ${this.version}.x:`, error.message);
       return null;
     }
   }
 
   async getInterfaceStatus(): Promise<any> {
     try {
-      const endpoint = this.getEndpoint('interfaces');
-      const response = await this.axios.get(endpoint);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch interface status:', error);
+      const interfacesEndpoint = this.getEndpoint('interfaces');
+      console.log(`Fetching interface status from ${interfacesEndpoint} (SonicOS ${this.version}.x)`);
+      
+      const response = await this.axios.get(interfacesEndpoint, {
+        timeout: ENDPOINT_LIMITS.system.timeout,
+        headers: {
+          'Accept': 'application/json',
+          'X-Request-Type': 'interface-status'
+        }
+      });
+      
+      if (response.status === 200 && response.data) {
+        return response.data;
+      }
+      
+      return null;
+    } catch (error: any) {
+      console.error(`Failed to fetch interface status from SonicOS ${this.version}.x:`, error.message);
       return null;
     }
   }
@@ -413,11 +476,25 @@ export class EnhancedSonicWallApiClient {
     }
 
     try {
-      const endpoint = this.getEndpoint('cloudManagement');
-      const response = await this.axios.get(endpoint);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch cloud management status:', error);
+      const cloudEndpoint = this.getVersionSpecificEndpoint('cloudManagement');
+      console.log(`Fetching cloud management status from ${cloudEndpoint} (SonicOS 8.x)`);
+      
+      const response = await this.axios.get(cloudEndpoint, {
+        timeout: ENDPOINT_LIMITS.system.timeout,
+        headers: {
+          'Accept': 'application/json',
+          'X-Request-Type': 'cloud-management',
+          'X-API-Version': 'v8'
+        }
+      });
+      
+      if (response.status === 200 && response.data) {
+        return response.data;
+      }
+      
+      return null;
+    } catch (error: any) {
+      console.error('Failed to fetch cloud management status from SonicOS 8.x:', error.message);
       return null;
     }
   }
@@ -428,11 +505,28 @@ export class EnhancedSonicWallApiClient {
     }
 
     try {
-      const endpoint = this.getEndpoint('advancedThreatProtection');
-      const response = await this.axios.get(endpoint);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch ATP stats:', error);
+      const atpEndpoint = this.version === '8' 
+        ? this.getVersionSpecificEndpoint('advancedThreatProtection')
+        : this.getEndpoint('threats'); // Fallback for 7.x
+        
+      console.log(`Fetching ATP stats from ${atpEndpoint} (SonicOS ${this.version}.x)`);
+      
+      const response = await this.axios.get(atpEndpoint, {
+        timeout: ENDPOINT_LIMITS.statistics.timeout,
+        headers: {
+          'Accept': 'application/json',
+          'X-Request-Type': 'atp-stats',
+          'X-API-Version': this.version === '8' ? 'v8' : 'v1'
+        }
+      });
+      
+      if (response.status === 200 && response.data) {
+        return response.data;
+      }
+      
+      return null;
+    } catch (error: any) {
+      console.error(`Failed to fetch ATP stats from SonicOS ${this.version}.x:`, error.message);
       return null;
     }
   }
@@ -491,7 +585,7 @@ export class EnhancedSonicWallApiClient {
     return {
       id: threat.id || threat.threat_id || Math.random().toString(36).substr(2, 9),
       timestamp: new Date(threat.timestamp || threat.detection_time || Date.now()),
-      severity: this.normalizeSeverity(threat.severity || threat.priority),
+      severity: this.normalizeThreatSeverity(threat.severity || threat.priority),
       type: this.normalizeThreatType(threat.type || threat.threat_type),
       sourceIp: threat.source_ip || threat.src_ip || 'unknown',
       destIp: threat.dest_ip || threat.dst_ip || 'unknown',
@@ -517,6 +611,61 @@ export class EnhancedSonicWallApiClient {
           description: attempt.signature || 'Intrusion attempt',
           action: 'blocked',
           blocked: true
+        });
+      });
+    }
+
+    return threats;
+  }
+
+  private parseThreatsFromSecurityServices(services: any): ThreatInfo[] {
+    const threats: ThreatInfo[] = [];
+    
+    // Parse security services data (common in SonicWall API responses)
+    if (services.gateway_antivirus && services.gateway_antivirus.detections) {
+      services.gateway_antivirus.detections.forEach((detection: any) => {
+        threats.push({
+          id: Math.random().toString(36).substr(2, 9),
+          timestamp: new Date(detection.timestamp || Date.now()),
+          severity: this.normalizeThreatSeverity(detection.severity || 'high'),
+          type: 'malware',
+          sourceIp: detection.source_ip || detection.client_ip || 'unknown',
+          destIp: detection.dest_ip || detection.server_ip || 'unknown',
+          description: detection.virus_name || detection.malware_name || 'Malware detected',
+          action: detection.action || 'quarantined',
+          blocked: detection.blocked !== false
+        });
+      });
+    }
+    
+    if (services.intrusion_prevention && services.intrusion_prevention.events) {
+      services.intrusion_prevention.events.forEach((event: any) => {
+        threats.push({
+          id: Math.random().toString(36).substr(2, 9),
+          timestamp: new Date(event.timestamp || Date.now()),
+          severity: this.normalizeThreatSeverity(event.severity || 'high'),
+          type: 'intrusion',
+          sourceIp: event.source_ip || event.attacker_ip || 'unknown',
+          destIp: event.dest_ip || event.victim_ip || 'unknown',
+          description: event.signature || event.attack_type || 'Intrusion attempt detected',
+          action: event.action || 'blocked',
+          blocked: event.blocked !== false
+        });
+      });
+    }
+    
+    if (services.anti_spyware && services.anti_spyware.detections) {
+      services.anti_spyware.detections.forEach((detection: any) => {
+        threats.push({
+          id: Math.random().toString(36).substr(2, 9),
+          timestamp: new Date(detection.timestamp || Date.now()),
+          severity: this.normalizeThreatSeverity(detection.severity || 'medium'),
+          type: 'suspicious',
+          sourceIp: detection.source_ip || 'unknown',
+          destIp: detection.dest_ip || 'unknown',
+          description: detection.spyware_name || detection.threat_name || 'Spyware detected',
+          action: detection.action || 'blocked',
+          blocked: detection.blocked !== false
         });
       });
     }
@@ -585,6 +734,21 @@ export class EnhancedSonicWallApiClient {
     if (['medium', 'med', 'warning', 'warn'].includes(sev)) return 'medium';
     if (['low', 'notice'].includes(sev)) return 'low';
     return 'info';
+  }
+
+  private normalizeThreatSeverity(severity: any): ThreatInfo['severity'] {
+    if (typeof severity === 'number') {
+      if (severity <= 2) return 'critical';
+      if (severity <= 4) return 'high';
+      if (severity <= 6) return 'medium';
+      return 'low';
+    }
+    
+    const sev = String(severity).toLowerCase();
+    if (['critical', 'crit', 'emergency', 'alert'].includes(sev)) return 'critical';
+    if (['high', 'error', 'err'].includes(sev)) return 'high';
+    if (['medium', 'med', 'warning', 'warn'].includes(sev)) return 'medium';
+    return 'low';
   }
 
   private normalizeCategory(category: any): LogEntry['category'] {
